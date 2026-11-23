@@ -40,11 +40,11 @@ struct FamilyList: View {
     var body: some View {
         VStack(spacing: 0) {
             if showAdobeNotice { AdobeNotice() }
-            CountRow(text: "\(items.count) famílias")
+            CountRow(text: tr("%ld families", items.count))
             if items.isEmpty {
-                EmptyState(title: "Nenhuma fonte aqui",
-                           message: readOnly ? "Nenhuma fonte do Adobe Fonts ativada no Creative Cloud."
-                                             : "Arraste fontes ou pastas para a janela, ou clique em Adicionar fontes.")
+                EmptyState(title: tr("No fonts here"),
+                           message: readOnly ? tr("No Adobe Fonts activated in Creative Cloud.")
+                                             : tr("Drag fonts or folders into the window, or click Add fonts."))
             } else {
                 ScrollView {
                     if prefs.isList {
@@ -96,11 +96,11 @@ struct FamilyEntry: View {
             FontPreview(face: family.face(weight: prefs.weight))
                 .frame(height: previewHeight(prefs.size))
             HStack {
-                Text(readOnly ? "Gerenciada pelo Creative Cloud" : (active ? "Ativa no sistema" : "Desativada"))
+                Text(readOnly ? tr("Managed by Creative Cloud") : (active ? tr("Active in the system") : tr("Inactive")))
                     .font(.system(size: 11)).foregroundStyle(active ? T.green : T.muted)
                 Spacer()
                 Button { showStyles.toggle() } label: {
-                    Text("Explorar família ›").font(.system(size: 12, weight: .semibold))
+                    Text(tr("Explore family ›")).font(.system(size: 12, weight: .semibold))
                         .padding(.vertical, 6).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -109,10 +109,10 @@ struct FamilyEntry: View {
         }
         .contextMenu {
             if !readOnly {
-                Button("Mostrar no Finder") { NSWorkspace.shared.activateFileViewerSelecting([family.preview.url]) }
+                Button(tr("Show in Finder")) { NSWorkspace.shared.activateFileViewerSelecting([family.preview.url]) }
                 Divider()
-                Button("Remover da biblioteca") { store.removeFromLibrary(family, trashFiles: false) }
-                Button("Remover e mover arquivos para a Lixeira", role: .destructive) { store.removeFromLibrary(family, trashFiles: true) }
+                Button(tr("Remove from library")) { store.removeFromLibrary(family, trashFiles: false) }
+                Button(tr("Remove and move files to Trash"), role: .destructive) { store.removeFromLibrary(family, trashFiles: true) }
             }
         }
     }
@@ -120,9 +120,9 @@ struct FamilyEntry: View {
     private var actions: some View {
         HStack(spacing: 0) {
             IconButton(systemName: store.isFavorite(family) ? "heart.fill" : "heart",
-                       tint: store.isFavorite(family) ? T.green : T.muted, help: "Favoritar") { store.toggleFavorite(family) }
+                       tint: store.isFavorite(family) ? T.green : T.muted, help: tr("Favorite")) { store.toggleFavorite(family) }
             Menu {
-                if store.state.collections.isEmpty { Text("Crie uma coleção na barra lateral") }
+                if store.state.collections.isEmpty { Text(tr("Create a collection in the sidebar")) }
                 ForEach(store.state.collections) { c in
                     Button { store.toggle(family, in: c.id) } label: {
                         Label(c.name, systemImage: c.familyIDs.contains(family.id) ? "checkmark" : "folder")
@@ -131,7 +131,7 @@ struct FamilyEntry: View {
             } label: {
                 Image(systemName: "plus").font(.system(size: 14)).foregroundStyle(T.muted).frame(width: 28, height: 28)
             }
-            .menuStyle(.borderlessButton).menuIndicator(.hidden).frame(width: 28).help("Adicionar à coleção")
+            .menuStyle(.borderlessButton).menuIndicator(.hidden).frame(width: 28).help(tr("Add to collection"))
         }
     }
 }
@@ -148,8 +148,8 @@ struct Chips: View {
     private var labels: [String] {
         var result = [family.source.label]
         let isVariable = family.faces.contains { $0.path.contains("[") }
-        result.append(isVariable ? "Variável" : "Estática")
-        result.append("\(family.faces.count) \(family.faces.count == 1 ? "face" : "faces")")
+        result.append(isVariable ? tr("Variable") : tr("Static"))
+        result.append(trPlural(family.faces.count, "%ld face", "%ld faces"))
         return result
     }
 }
@@ -188,9 +188,9 @@ struct GoogleList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            CountRow(text: "\(items.count) famílias · catálogo do Google Fonts")
+            CountRow(text: tr("%ld families · Google Fonts catalog", items.count))
             if store.googleCatalog.isEmpty {
-                ProgressView("Carregando catálogo…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView(tr("Loading catalog…")).frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     if prefs.isList {
@@ -230,17 +230,17 @@ struct GoogleEntry: View {
                     .font(.system(size: 14)).foregroundStyle(inLibrary ? T.green : T.muted).frame(width: 17)
                 Text(family.name).font(.system(size: 15, weight: .bold)).lineLimit(1)
                 if !compact { Rectangle().fill(T.lineStrong).frame(width: 1, height: 14) }
-                Text("Google Fonts · \(family.license.uppercased()) · \(family.files.count) \(family.files.count == 1 ? "arquivo" : "arquivos")")
+                Text(tr("Google Fonts · %@ · %@", family.license.uppercased(), trPlural(family.files.count, "%ld file", "%ld files")))
                     .font(.system(size: 11)).foregroundStyle(T.muted).lineLimit(1)
                 Spacer(minLength: 4)
-                if !inLibrary { IconButton(systemName: "arrow.down.to.line", help: "Baixar para a biblioteca") { store.download(family) } }
+                if !inLibrary { IconButton(systemName: "arrow.down.to.line", help: tr("Download to library")) { store.download(family) } }
             }
             Group {
                 if let previewFace { FontPreview(face: previewFace) }
                 else { Text(prefs.text).font(.system(size: prefs.size)).foregroundStyle(T.line).redacted(reason: .placeholder).lineLimit(1) }
             }.frame(height: previewHeight(prefs.size), alignment: .leading)
             HStack {
-                Text(inLibrary ? "Na biblioteca · ative na aba Todas as fontes" : "Disponível online · prévia sem ativação")
+                Text(inLibrary ? tr("In library · activate it in the All fonts tab") : tr("Available online · preview without activation"))
                     .font(.system(size: 11)).foregroundStyle(inLibrary ? T.green : T.muted)
                 Spacer()
             }
@@ -280,10 +280,10 @@ struct AdobeNotice: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "info.circle").foregroundStyle(T.lime)
-            Text("A Adobe não permite baixar os arquivos das fontes fora do Creative Cloud. Aqui você vê as que já estão ativadas lá.")
+            Text(tr("Adobe does not allow downloading font files outside Creative Cloud. Here you see the ones already activated there."))
                 .font(.system(size: 12)).foregroundStyle(T.muted)
             Spacer()
-            Link("Abrir Adobe Fonts", destination: URL(string: "https://fonts.adobe.com/my_fonts")!)
+            Link(tr("Open Adobe Fonts"), destination: URL(string: "https://fonts.adobe.com/my_fonts")!)
                 .font(.system(size: 12, weight: .semibold)).foregroundStyle(T.lime)
         }
         .padding(12).background(RoundedRectangle(cornerRadius: 8).fill(T.panel))

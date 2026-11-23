@@ -22,7 +22,7 @@ enum LoginItem {
             if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
             return nil
         } catch {
-            return "Não foi possível alterar: \(error.localizedDescription)"
+            return tr("Could not change: %@", error.localizedDescription)
         }
     }
 

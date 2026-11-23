@@ -6,12 +6,16 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @EnvironmentObject var store: LibraryStore
     @StateObject private var prefs = PreviewPrefs()
-    @State private var selection: SidebarItem = .all
+    @State private var selection: SidebarItem
     @State private var search = ""
     @State private var newCollection = ""
     @State private var showNewCollection = false
     @State private var showImport = false
     @State private var dropTargeted = false
+
+    init(initialSelection: SidebarItem = .all) {
+        _selection = State(initialValue: initialSelection)
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -38,23 +42,23 @@ struct ContentView: View {
         .sheet(isPresented: $showImport) { ImportSheet() }
         .onDrop(of: [.fileURL], isTargeted: $dropTargeted, perform: handleDrop)
         .overlay { if dropTargeted { DropOverlay() } }
-        .alert("Nova coleção", isPresented: $showNewCollection) {
-            TextField("Ex.: Cliente Café da Zi", text: $newCollection)
-            Button("Criar") { store.addCollection(named: newCollection); newCollection = "" }
-            Button("Cancelar", role: .cancel) { newCollection = "" }
+        .alert(tr("New collection"), isPresented: $showNewCollection) {
+            TextField(tr("E.g. Client Coffee Shop"), text: $newCollection)
+            Button(tr("Create")) { store.addCollection(named: newCollection); newCollection = "" }
+            Button(tr("Cancel"), role: .cancel) { newCollection = "" }
         }
         .onAppear { store.loadGoogleCatalog() }
     }
 
     private var title: String {
         switch selection {
-        case .all: return "Todas as fontes"
-        case .active: return "Fontes ativas"
-        case .favorites: return "Favoritos"
+        case .all: return tr("All fonts")
+        case .active: return tr("Active fonts")
+        case .favorites: return tr("Favorites")
         case .google: return "Google Fonts"
         case .source: return "Adobe Fonts"
         case .playground: return "Playground"
-        case .collection(let id): return store.state.collections.first { $0.id == id }?.name ?? "Coleção"
+        case .collection(let id): return store.state.collections.first { $0.id == id }?.name ?? tr("Collection")
         }
     }
 
@@ -100,32 +104,32 @@ struct SidebarView: View {
             Brand().padding(.top, 36).padding(.horizontal, 18).padding(.bottom, 22)
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
-                    SectionLabel("SEU ACERVO")
-                    row(.all, "text.alignleft", "Todas as fontes", store.localFamilies.count)
+                    SectionLabel(tr("YOUR LIBRARY"))
+                    row(.all, "text.alignleft", tr("All fonts"), store.localFamilies.count)
                     row(.google, "globe", "Google Fonts", store.googleCatalog.count)
-                    row(.active, "bolt", "Fontes ativas", store.state.active.count)
-                    row(.favorites, "heart", "Favoritos", store.state.favorites.count)
+                    row(.active, "bolt", tr("Active fonts"), store.state.active.count)
+                    row(.favorites, "heart", tr("Favorites"), store.state.favorites.count)
                     row(.source(.adobe), "a.circle", "Adobe Fonts", store.adobeFamilies.count)
 
-                    SectionLabel("FERRAMENTAS").padding(.top, 22)
+                    SectionLabel(tr("TOOLS")).padding(.top, 22)
                     toolRow(.playground, "textformat.alt", "Playground")
 
                     HStack {
-                        SectionLabel("COLEÇÕES")
+                        SectionLabel(tr("COLLECTIONS"))
                         Spacer()
-                        IconButton(systemName: "plus", help: "Nova coleção") { showNewCollection = true }
+                        IconButton(systemName: "plus", help: tr("New collection")) { showNewCollection = true }
                     }.padding(.top, 22)
                     ForEach(store.state.collections) { collection in
                         row(.collection(collection.id), "folder", collection.name, collection.familyIDs.count)
                             .contextMenu {
-                                Button("Ativar coleção") { store.setCollection(collection.id, active: true) }
-                                Button("Desativar coleção") { store.setCollection(collection.id, active: false) }
+                                Button(tr("Activate collection")) { store.setCollection(collection.id, active: true) }
+                                Button(tr("Deactivate collection")) { store.setCollection(collection.id, active: false) }
                                 Divider()
-                                Button("Excluir coleção", role: .destructive) { store.deleteCollection(collection.id) }
+                                Button(tr("Delete collection"), role: .destructive) { store.deleteCollection(collection.id) }
                             }
                     }
                     if store.state.collections.isEmpty {
-                        Text("Crie coleções por cliente ou projeto para ativar tudo de uma vez.")
+                        Text(tr("Create collections per client or project to activate everything at once."))
                             .font(.system(size: 11)).foregroundStyle(T.muted).padding(.horizontal, 12).padding(.top, 4)
                     }
                     ActivationModeCard().padding(.horizontal, 12).padding(.top, 24).padding(.bottom, 16)
@@ -198,7 +202,7 @@ struct PageHeader: View {
         HStack {
             Text(title).font(.system(size: 28, weight: .bold)).tracking(-0.6).lineLimit(1)
             Spacer()
-            GreenButton(title: "Adicionar fontes", icon: "plus") { showImport = true }
+            GreenButton(title: tr("Add fonts"), icon: "plus") { showImport = true }
         }
         .padding(.horizontal, 28).padding(.top, 34).padding(.bottom, 14)
     }
@@ -209,7 +213,7 @@ struct ControlsBar: View {
     @Binding var search: String
 
     private let weights: [(String, Int?)] = [
-        ("Padrão", nil), ("Light 300", 300), ("Regular 400", 400), ("Medium 500", 500),
+        (tr("Default"), nil), ("Light 300", 300), ("Regular 400", 400), ("Medium 500", 500),
         ("SemiBold 600", 600), ("Bold 700", 700), ("Black 900", 900)
     ]
 
@@ -218,7 +222,7 @@ struct ControlsBar: View {
             HStack(spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass").foregroundStyle(T.muted)
-                    TextField("Buscar fontes", text: $search).textFieldStyle(.plain)
+                    TextField(tr("Search fonts"), text: $search).textFieldStyle(.plain)
                 }
                 .frame(width: 280).inputField()
                 Spacer()
@@ -226,16 +230,16 @@ struct ControlsBar: View {
             }
             HStack(spacing: 10) {
                 Image(systemName: "textformat").foregroundStyle(T.muted)
-                Text("Prévia").font(.system(size: 12)).foregroundStyle(T.muted)
-                TextField("Digite o texto de prévia", text: $prefs.text).inputField()
+                Text(tr("Preview")).font(.system(size: 12)).foregroundStyle(T.muted)
+                TextField(tr("Type the preview text"), text: $prefs.text).inputField()
             }
             HStack(alignment: .bottom, spacing: 24) {
-                LabeledSlider(label: "Tamanho", valueText: "\(Int(prefs.size)) px", value: $prefs.size, range: 14...140)
-                LabeledSlider(label: "Espaçamento",
+                LabeledSlider(label: tr("Size"), valueText: "\(Int(prefs.size)) px", value: $prefs.size, range: 14...140)
+                LabeledSlider(label: tr("Spacing"),
                               valueText: abs(prefs.tracking) < 0.005 ? "Normal" : String(format: "%+.2f em", prefs.tracking),
                               value: $prefs.tracking, range: -0.1...0.4)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Peso").font(.system(size: 12)).foregroundStyle(T.muted)
+                    Text(tr("Weight")).font(.system(size: 12)).foregroundStyle(T.muted)
                     Picker("", selection: $prefs.weight) {
                         ForEach(weights, id: \.0) { Text($0.0).tag($0.1) }
                     }.labelsHidden().frame(width: 150)
@@ -270,15 +274,15 @@ struct FooterBar: View {
         HStack(spacing: 8) {
             if store.isBusy { ProgressView().controlSize(.small) }
             Text(store.status.isEmpty
-                 ? "Biblioteca local · \(store.libraryDir.path)"
+                 ? tr("Local library · %@", store.libraryDir.path)
                  : store.status)
                 .font(.system(size: 11)).foregroundStyle(T.muted).lineLimit(1).truncationMode(.middle)
             Spacer()
-            Button("Desativar todas") { store.deactivateAll() }
+            Button(tr("Deactivate all")) { store.deactivateAll() }
                 .buttonStyle(.plain).font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(store.state.active.isEmpty ? T.muted : T.text)
                 .disabled(store.state.active.isEmpty)
-            Text("\(store.state.faces.count) estilos · \(store.localFamilies.count) famílias")
+            Text(tr("%ld styles · %ld families", store.state.faces.count, store.localFamilies.count))
                 .font(.system(size: 11)).foregroundStyle(T.muted)
         }
         .padding(.horizontal, 28).frame(height: 30)
@@ -290,7 +294,7 @@ struct DropOverlay: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 16).strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [10]))
             .foregroundStyle(T.green).background(T.bg.opacity(0.85)).padding(14)
-            .overlay(Text("Solte as fontes ou pastas para adicionar").font(.system(size: 20, weight: .bold)))
+            .overlay(Text(tr("Drop fonts or folders to add")).font(.system(size: 20, weight: .bold)))
             .allowsHitTesting(false)
     }
 }

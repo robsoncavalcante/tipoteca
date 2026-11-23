@@ -31,13 +31,17 @@ final class LibraryStore: ObservableObject {
     private var playgroundSaveTask: Task<Void, Never>?
     private let artCraftWatcher = ArtCraftWatcher()
 
-    init() {
-        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Tipoteca", isDirectory: true)
+    /// `supportDirectory` e `startServices: false` existem para os testes: usam uma pasta temporária e não mexem no sistema
+    /// (sem vigia de apps, sem reativar fontes, sem ler o Adobe Fonts).
+    init(supportDirectory: URL? = nil, startServices: Bool = true) {
+        let support = supportDirectory ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Tipoteca", isDirectory: true)
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
         stateURL = support.appendingPathComponent("library.json")
         playgroundURL = support.appendingPathComponent("playground.json")
 
-        if let saved = UserDefaults.standard.string(forKey: "libraryDir") {
+        if let supportDirectory {
+            libraryDir = supportDirectory.appendingPathComponent("library", isDirectory: true)
+        } else if let saved = UserDefaults.standard.string(forKey: "libraryDir") {
             libraryDir = URL(fileURLWithPath: saved, isDirectory: true)
         } else {
             libraryDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Documents/Tipoteca", isDirectory: true)
@@ -48,6 +52,7 @@ final class LibraryStore: ObservableObject {
         if let data = try? Data(contentsOf: playgroundURL), let loaded = try? JSONDecoder().decode(PlaygroundState.self, from: data), !loaded.compositions.isEmpty {
             playground = loaded
         }
+        guard startServices else { return }
         refreshAdobe()
         artCraftApps = ArtCraftWatcher.currentlyRunning()
         appliedMode = resolvedMode()
@@ -98,15 +103,15 @@ final class LibraryStore: ObservableObject {
             let errors = deactivateEverywhere(family)
             FolderActivator.purgeCache(family)
             state.active.remove(family.id)
-            status = errors.isEmpty ? "“\(family.name)” desativada." : "Desativada com avisos: \(errors.first ?? "")"
+            status = errors.isEmpty ? tr("“%@” deactivated.", family.name) : tr("Deactivated with warnings: %@", errors.first ?? "")
         } else {
             let errors = activate(family)
             if errors.isEmpty {
                 prewarmCache(for: [family])
                 state.active.insert(family.id)
-                status = "“\(family.name)” ativada — já aparece nos seus apps."
+                status = tr("“%@” activated — it now shows up in your apps.", family.name)
             } else {
-                status = "Não foi possível ativar “\(family.name)”: \(errors.first ?? "")"
+                status = tr("Could not activate “%@”: %@", family.name, errors.first ?? "")
             }
         }
         save()
@@ -117,7 +122,7 @@ final class LibraryStore: ObservableObject {
         FolderActivator.removeEmptyRoot()
         FolderActivator.purgeAllCache()
         state.active.removeAll()
-        status = "Todas as fontes foram desativadas."
+        status = tr("All fonts were deactivated.")
         save()
     }
 
@@ -173,14 +178,14 @@ final class LibraryStore: ObservableObject {
     func setActivationMode(_ mode: ActivationMode) {
         guard mode != activationMode else { return }
         activationMode = mode
-        applyResolvedMode(reason: "Modo “\(mode.title)”")
+        applyResolvedMode(reason: tr("Mode “%@”", mode.title))
     }
 
     /// Abriu ou fechou um app da ArtCraft.
     private func artCraftAppsChanged(_ names: [String]) {
         artCraftApps = names
         guard activationMode == .auto else { return }
-        let reason = names.isEmpty ? "ArtCraft fechado" : "\(names.joined(separator: ", ")) aberto"
+        let reason = names.isEmpty ? tr("ArtCraft closed") : tr("%@ open", names.joined(separator: ", "))
         applyResolvedMode(reason: reason)
     }
 
@@ -205,10 +210,10 @@ final class LibraryStore: ObservableObject {
         // Se uma fonte falhar (ex.: HD externo ocupado/desconectado), ela CONTINUA na lista de ativas:
         // a intenção do usuário não se perde, e ela é tentada de novo na próxima abertura do Tipoteca.
         save()
-        let how = target == .folder ? "copiadas para ~/Library/Fonts/Tipoteca" : "ativadas pelo sistema"
+        let how = target == .folder ? tr("copied to ~/Library/Fonts/Tipoteca") : tr("activated through the system")
         status = failed == 0
-            ? "\(reason): \(active.count) fonte(s) \(how)."
-            : "\(reason): \(failed) fonte(s) não puderam ser ativadas agora (disco desconectado?) e serão tentadas de novo ao abrir o Tipoteca."
+            ? tr("%@: %ld font(s) %@.", reason, active.count, how)
+            : tr("%@: %ld font(s) could not be activated right now (disk disconnected?) and will be retried the next time Tipoteca opens.", reason, failed)
     }
 
     // MARK: Favoritos e coleções
@@ -241,7 +246,7 @@ final class LibraryStore: ObservableObject {
     func setCollection(_ id: UUID, active: Bool) {
         let members = families(for: .collection(id))
         for family in members where isActive(family) != active { toggleActive(family) }
-        status = active ? "Coleção ativada (\(members.count) famílias)." : "Coleção desativada."
+        status = active ? tr("Collection activated (%ld families).", members.count) : tr("Collection deactivated.")
     }
 
     // MARK: Importação
@@ -251,7 +256,7 @@ final class LibraryStore: ObservableObject {
     func importFonts(from urls: [URL], copy: Bool, trashOriginals: Bool) {
         guard !isBusy else { return }
         isBusy = true
-        status = "Lendo fontes…"
+        status = tr("Reading fonts…")
         let destination = libraryDir
         let known = Set(state.faces.map(\.postScript))
         let knownPaths = Set(state.faces.map(\.path))
@@ -265,7 +270,7 @@ final class LibraryStore: ObservableObject {
 
             for (index, file) in files.enumerated() {
                 if index % 100 == 0 {
-                    let progress = "Lendo fontes… \(index) de \(files.count)"
+                    let progress = tr("Reading fonts… %ld of %ld", index, files.count)
                     await MainActor.run { self?.status = progress }
                 }
                 // Arquivo já indexado (mesmo caminho): pula sem nem abrir — torna a re-sincronização rápida.
@@ -290,7 +295,7 @@ final class LibraryStore: ObservableObject {
                 if copy && trashOriginals && finalURL != file { try? FileManager.default.trashItem(at: file, resultingItemURL: nil) }
             }
 
-            let summary = "\(added.count) estilos importados · \(skipped) já existiam · \(failures) com erro"
+            let summary = tr("%ld styles imported · %ld already existed · %ld with errors", added.count, skipped, failures)
             await MainActor.run {
                 guard let self else { return }
                 self.state.faces.append(contentsOf: added)
@@ -314,7 +319,7 @@ final class LibraryStore: ObservableObject {
         state.favorites.remove(family.id)
         for i in state.collections.indices { state.collections[i].familyIDs.remove(family.id) }
         if trashFiles { paths.forEach { try? FileManager.default.trashItem(at: URL(fileURLWithPath: $0), resultingItemURL: nil) } }
-        status = "“\(family.name)” removida da biblioteca."
+        status = tr("“%@” removed from the library.", family.name)
         save()
     }
 
@@ -322,19 +327,19 @@ final class LibraryStore: ObservableObject {
 
     func loadGoogleCatalog(force: Bool = false) {
         guard googleCatalog.isEmpty || force else { return }
-        status = "Carregando catálogo do Google Fonts…"
+        status = tr("Loading the Google Fonts catalog…")
         Task {
             do {
                 googleCatalog = try await GoogleFonts.loadCatalog(forceRefresh: force)
-                status = "\(googleCatalog.count) famílias no Google Fonts."
+                status = tr("%ld families on Google Fonts.", googleCatalog.count)
             } catch {
-                status = "Sem conexão com o Google Fonts: \(error.localizedDescription)"
+                status = tr("No connection to Google Fonts: %@", error.localizedDescription)
             }
         }
     }
 
     func download(_ family: GoogleFamily) {
-        status = "Baixando “\(family.name)”…"
+        status = tr("Downloading “%@”…", family.name)
         let dir = libraryDir
         Task {
             do {
@@ -343,9 +348,9 @@ final class LibraryStore: ObservableObject {
                 let known = Set(state.faces.map(\.id))
                 state.faces.append(contentsOf: faces.filter { !known.contains($0.id) })
                 save()
-                status = "“\(family.name)” baixada para a biblioteca (ainda desativada)."
+                status = tr("“%@” downloaded to the library (still deactivated).", family.name)
             } catch {
-                status = "Falha ao baixar “\(family.name)”: \(error.localizedDescription)"
+                status = tr("Failed to download “%@”: %@", family.name, error.localizedDescription)
             }
         }
     }
@@ -378,7 +383,7 @@ final class LibraryStore: ObservableObject {
             let data = try JSONEncoder().encode(state)
             try data.write(to: stateURL, options: .atomic)
         } catch {
-            status = "Erro ao salvar a biblioteca: \(error.localizedDescription)"
+            status = tr("Error saving the library: %@", error.localizedDescription)
         }
     }
 }

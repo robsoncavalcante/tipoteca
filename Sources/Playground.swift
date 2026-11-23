@@ -14,7 +14,7 @@ enum CTFonts {
 }
 
 private let weightOptions: [(String, Int?)] = [
-    ("Padrão", nil), ("Light 300", 300), ("Regular 400", 400), ("Medium 500", 500),
+    (tr("Default"), nil), ("Light 300", 300), ("Regular 400", 400), ("Medium 500", 500),
     ("SemiBold 600", 600), ("Bold 700", 700), ("Black 900", 900)
 ]
 
@@ -71,18 +71,18 @@ struct PlaygroundView: View {
                 ProjectMenuButton()
                 Spacer()
                 Button { showTemplates = true } label: {
-                    Label("Modelos", systemImage: "square.grid.2x2").font(.system(size: 12, weight: .semibold))
+                    Label(tr("Templates"), systemImage: "square.grid.2x2").font(.system(size: 12, weight: .semibold))
                 }.buttonStyle(.plain)
                 Button { showDefaults.toggle() } label: {
-                    Label("Fontes padrão", systemImage: "textformat")
+                    Label(tr("Default fonts"), systemImage: "textformat")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(store.playground.hasDefaults ? T.text : T.green)
                 }
                 .buttonStyle(.plain)
                 .popover(isPresented: $showDefaults, arrowEdge: .bottom) { DefaultFontsPanel() }
-                Toggle("Comparar", isOn: $store.playground.compare)
+                Toggle(tr("Compare"), isOn: $store.playground.compare)
                     .toggleStyle(.switch).controlSize(.small).tint(T.green).disabled(count < 2)
-                    .help(count < 2 ? "Crie uma segunda composição para comparar" : "Mostra duas composições lado a lado")
+                    .help(count < 2 ? tr("Create a second composition to compare") : tr("Shows two compositions side by side"))
             }
             HStack(spacing: 8) {
                 ForEach(Array(store.playground.compositions.enumerated()), id: \.element.id) { index, composition in
@@ -93,7 +93,7 @@ struct PlaygroundView: View {
                             .background(Capsule().fill(index == current ? T.text : T.panel))
                     }.buttonStyle(.plain)
                 }
-                IconButton(systemName: "plus", help: "Nova composição (copia a atual)") { duplicate() }
+                IconButton(systemName: "plus", help: tr("New composition (copies the current one)")) { duplicate() }
                 Spacer()
             }
         }
@@ -111,7 +111,7 @@ struct PlaygroundView: View {
 
     private func duplicate() {
         var copy = LibraryStore.freshIDs(store.playground.compositions[current])
-        copy.name = "Composição \(count + 1)"
+        copy.name = tr("Composition %ld", count + 1)
         store.playground.compositions.append(copy)
         selected = count - 1
     }
@@ -122,7 +122,7 @@ struct PlaygroundView: View {
         if store.playground.compositions.contains(where: { $0.name == copy.name }) { copy.name += " \(count + 1)" }
         store.playground.compositions.append(copy)
         selected = count - 1
-        store.status = "Modelo “\(copy.name)” adicionado ao projeto."
+        store.status = tr("Template “%@” added to the project.", copy.name)
     }
 }
 
@@ -202,15 +202,15 @@ private struct CompositionEditor: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            TextField("Nome", text: $composition.name).inputField().frame(width: 180)
-            Toggle("Fundo escuro", isOn: $composition.isDark).toggleStyle(.switch).controlSize(.small).tint(T.green)
+            TextField(tr("Name"), text: $composition.name).inputField().frame(width: 180)
+            Toggle(tr("Dark background"), isOn: $composition.isDark).toggleStyle(.switch).controlSize(.small).tint(T.green)
             Spacer()
-            Button("Ativar fontes") { activateUsedFonts() }
-                .help("Ativa no sistema as fontes usadas nesta composição")
-            Button("Exportar PNG") { exportPNG() }
+            Button(tr("Activate fonts")) { activateUsedFonts() }
+                .help(tr("Activates in the system the fonts used in this composition"))
+            Button(tr("Export PNG")) { exportPNG() }
             Menu {
-                Button("Salvar como modelo") { saveAsTemplate() }
-                Button("Excluir composição", role: .destructive) {
+                Button(tr("Save as template")) { saveAsTemplate() }
+                Button(tr("Delete composition"), role: .destructive) {
                     store.playground.compositions.removeAll { $0.id == composition.id }
                 }.disabled(store.playground.compositions.count < 2)
             } label: {
@@ -221,14 +221,14 @@ private struct CompositionEditor: View {
 
     private var colorsRow: some View {
         HStack(spacing: 16) {
-            ColorPicker("Fundo", selection: Binding(
+            ColorPicker(tr("Background"), selection: Binding(
                 get: { color(fromHex: composition.backgroundHex) ?? (composition.isDark ? Color(hex: 0x0D120F) : Color(hex: 0xF4F6F4)) },
                 set: { composition.backgroundHex = hexString($0) }))
-            ColorPicker("Texto", selection: Binding(
+            ColorPicker(tr("Text"), selection: Binding(
                 get: { color(fromHex: composition.inkHex) ?? (composition.isDark ? Color(hex: 0xF1F3F1) : Color(hex: 0x111411)) },
                 set: { composition.inkHex = hexString($0) }))
             if composition.backgroundHex != nil || composition.inkHex != nil {
-                Button("Cores padrão") { composition.backgroundHex = nil; composition.inkHex = nil }
+                Button(tr("Default colors")) { composition.backgroundHex = nil; composition.inkHex = nil }
                     .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(T.lime)
             }
             Spacer()
@@ -238,28 +238,28 @@ private struct CompositionEditor: View {
     private var symbolRow: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 12) {
-                Text("Símbolo").font(.system(size: 13, weight: .bold))
-                Button(composition.symbolPath == nil ? "Escolher imagem…" : "Trocar…") { chooseSymbol() }
+                Text(tr("Symbol")).font(.system(size: 13, weight: .bold))
+                Button(composition.symbolPath == nil ? tr("Choose image…") : tr("Change…")) { chooseSymbol() }
                 if let path = composition.symbolPath {
                     Text((path as NSString).lastPathComponent).font(.system(size: 11)).foregroundStyle(T.muted).lineLimit(1)
                     if SymbolCache.image(at: path) == nil {
-                        Text("não foi possível abrir").font(.system(size: 11)).foregroundStyle(.red)
+                        Text(tr("could not open")).font(.system(size: 11)).foregroundStyle(.red)
                     }
                     Spacer()
-                    Button("Remover") { composition.symbolPath = nil }
+                    Button(tr("Remove")) { composition.symbolPath = nil }
                         .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(T.muted)
                 } else {
-                    Text("PNG, JPEG, PDF ou SVG — aparece ao lado do texto").font(.system(size: 11)).foregroundStyle(T.muted)
+                    Text(tr("PNG, JPEG, PDF or SVG — appears next to the text")).font(.system(size: 11)).foregroundStyle(T.muted)
                     Spacer()
                 }
             }
             if composition.symbolPath != nil {
                 HStack(spacing: 18) {
-                    LabeledSlider(label: "Tamanho", valueText: "\(Int(composition.symbolSize)) px",
+                    LabeledSlider(label: tr("Size"), valueText: "\(Int(composition.symbolSize)) px",
                                   value: $composition.symbolSize, range: 24...240)
-                    LabeledSlider(label: "Distância", valueText: "\(Int(composition.symbolGap)) px",
+                    LabeledSlider(label: tr("Distance"), valueText: "\(Int(composition.symbolGap)) px",
                                   value: $composition.symbolGap, range: 0...120)
-                    Toggle("Acima do texto", isOn: $composition.symbolOnTop).toggleStyle(.switch)
+                    Toggle(tr("Above the text"), isOn: $composition.symbolOnTop).toggleStyle(.switch)
                         .controlSize(.small).tint(T.green).font(.system(size: 12))
                 }
             }
@@ -273,14 +273,14 @@ private struct CompositionEditor: View {
         var template = LibraryStore.freshIDs(composition)
         template.name = composition.name
         store.playground.userTemplates.append(template)
-        store.status = "Modelo “\(template.name)” salvo em Modelos > Meus modelos."
+        store.status = tr("Template “%@” saved in Templates > My templates.", template.name)
     }
 
     private func chooseSymbol() {
         let panel = NSOpenPanel()
         panel.canChooseFiles = true; panel.canChooseDirectories = false; panel.allowsMultipleSelection = false
         panel.allowedContentTypes = [.png, .jpeg, .pdf, .svg]
-        panel.message = "Escolha o símbolo da marca"
+        panel.message = tr("Choose the brand symbol")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         composition.symbolPath = url.path
     }
@@ -288,12 +288,12 @@ private struct CompositionEditor: View {
     private func activateUsedFonts() {
         let ids = Set(store.playground.resolved(composition).blocks.compactMap(\.familyID))
         let families = store.localFamilies.filter { ids.contains($0.id) }
-        guard !families.isEmpty else { store.status = "Escolha as fontes dos blocos antes de ativar."; return }
+        guard !families.isEmpty else { store.status = tr("Choose the block fonts before activating."); return }
         let pending = families.filter { !store.isActive($0) }
         pending.forEach { store.toggleActive($0) }
         store.status = pending.isEmpty
-            ? "As fontes desta composição já estavam ativas."
-            : "\(pending.count) \(pending.count == 1 ? "fonte ativada" : "fontes ativadas") para esta composição."
+            ? tr("This composition's fonts were already active.")
+            : trPlural(pending.count, "%ld font activated for this composition.", "%ld fonts activated for this composition.")
     }
 
     @MainActor
@@ -308,14 +308,14 @@ private struct CompositionEditor: View {
         guard let image = renderer.nsImage, let tiff = image.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff),
               let png = rep.representation(using: .png, properties: [:]) else {
-            store.status = "Não foi possível gerar a imagem."
+            store.status = tr("Could not generate the image.")
             return
         }
         do {
             try png.write(to: url)
-            store.status = "Composição exportada: \(url.lastPathComponent)"
+            store.status = tr("Composition exported: %@", url.lastPathComponent)
         } catch {
-            store.status = "Erro ao salvar a imagem: \(error.localizedDescription)"
+            store.status = tr("Error saving the image: %@", error.localizedDescription)
         }
     }
 }
@@ -344,19 +344,19 @@ private struct BlockControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                Text(block.label).font(.system(size: 13, weight: .bold)).frame(width: 52, alignment: .leading)
+                Text(blockLabel(block.label)).font(.system(size: 13, weight: .bold)).frame(width: 52, alignment: .leading)
                 FamilyPickerButton(familyID: $block.familyID, fallbackID: store.playground.defaultFamily(for: block.label))
                 Picker("", selection: $block.weight) {
                     ForEach(weightOptions, id: \.0) { Text($0.0).tag($0.1) }
                 }.labelsHidden().frame(width: 130)
             }
-            TextField("Texto", text: $block.text, axis: .vertical).lineLimit(1...3).inputFieldFlexible()
+            TextField(tr("Text"), text: $block.text, axis: .vertical).lineLimit(1...3).inputFieldFlexible()
             HStack(spacing: 18) {
-                LabeledSlider(label: "Tamanho", valueText: "\(Int(block.size)) px", value: $block.size, range: 8...160)
-                LabeledSlider(label: "Espaçamento",
+                LabeledSlider(label: tr("Size"), valueText: "\(Int(block.size)) px", value: $block.size, range: 8...160)
+                LabeledSlider(label: tr("Spacing"),
                               valueText: abs(block.tracking) < 0.005 ? "Normal" : String(format: "%+.2f", block.tracking),
                               value: $block.tracking, range: -0.1...0.4)
-                LabeledSlider(label: "Entrelinha", valueText: String(format: "%.2f", block.lineHeight),
+                LabeledSlider(label: tr("Line height"), valueText: String(format: "%.2f", block.lineHeight),
                               value: $block.lineHeight, range: 0.8...2.2)
             }
         }
@@ -391,9 +391,9 @@ private struct FamilyPickerButton: View {
     var body: some View {
         Button { isOpen.toggle() } label: {
             HStack {
-                Text(currentName ?? "Escolher fonte…").font(.system(size: 13, weight: .semibold))
+                Text(currentName ?? tr("Choose font…")).font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(currentName == nil ? T.green : T.text).lineLimit(1)
-                if isFallback { Text("padrão").font(.system(size: 10)).foregroundStyle(T.muted) }
+                if isFallback { Text(tr("default")).font(.system(size: 10)).foregroundStyle(T.muted) }
                 Spacer()
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: 10)).foregroundStyle(T.muted)
             }
@@ -412,11 +412,11 @@ private struct FamilyPickerButton: View {
         return VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass").foregroundStyle(T.muted)
-                TextField("Buscar na biblioteca", text: $query).textFieldStyle(.plain)
+                TextField(tr("Search library"), text: $query).textFieldStyle(.plain)
             }.inputField().padding(10)
             Rectangle().fill(T.line).frame(height: 1)
             if allowsClear || (familyID != nil && fallbackID != nil) {
-                Button(allowsClear ? "Sem fonte padrão" : "Usar a fonte padrão") { familyID = nil; isOpen = false }
+                Button(allowsClear ? tr("No default font") : tr("Use the default font")) { familyID = nil; isOpen = false }
                     .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(T.lime)
                     .padding(.horizontal, 14).frame(height: 30, alignment: .leading).frame(maxWidth: .infinity, alignment: .leading)
                 Rectangle().fill(T.line).frame(height: 1)
@@ -450,13 +450,13 @@ private struct DefaultFontsPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Fontes padrão").font(.system(size: 15, weight: .bold))
-            Text("Valem para toda composição, nova ou antiga, em que o bloco ainda não tem fonte própria.")
+            Text(tr("Default fonts")).font(.system(size: 15, weight: .bold))
+            Text(tr("They apply to every composition, new or old, where the block has no font of its own."))
                 .font(.system(size: 11)).foregroundStyle(T.muted).fixedSize(horizontal: false, vertical: true)
             row("Título", $store.playground.defaultTitle)
             row("Apoio", $store.playground.defaultSupport)
             row("Corpo", $store.playground.defaultBody)
-            Button("Usar as fontes padrão em todos os blocos de todas as composições") { clearOverrides() }
+            Button(tr("Use the default fonts in every block of every composition")) { clearOverrides() }
                 .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(T.lime)
         }
         .padding(18).frame(width: 380).background(T.bg).preferredColorScheme(.dark)
@@ -464,7 +464,7 @@ private struct DefaultFontsPanel: View {
 
     private func row(_ label: String, _ binding: Binding<String?>) -> some View {
         HStack(spacing: 10) {
-            Text(label).font(.system(size: 13, weight: .bold)).frame(width: 52, alignment: .leading)
+            Text(blockLabel(label)).font(.system(size: 13, weight: .bold)).frame(width: 52, alignment: .leading)
             FamilyPickerButton(familyID: binding, allowsClear: true)
         }
     }

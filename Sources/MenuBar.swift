@@ -94,10 +94,10 @@ struct MenuBarContent: View {
     private func header(active: Int, total: Int) -> some View {
         HStack(spacing: 8) {
             Circle().fill(active == 0 ? T.muted : T.green).frame(width: 8, height: 8)
-            Text(active == 0 ? "Nenhuma fonte ativa" : "\(active) \(active == 1 ? "família ativa" : "famílias ativas")")
+            Text(active == 0 ? tr("No active fonts") : trPlural(active, "%ld active family", "%ld active families"))
                 .font(.system(size: 13, weight: .semibold))
             Spacer()
-            Text("\(total) na biblioteca").font(.system(size: 11)).foregroundStyle(T.muted)
+            Text(tr("%ld in library", total)).font(.system(size: 11)).foregroundStyle(T.muted)
         }.padding(14)
     }
 
@@ -105,11 +105,11 @@ struct MenuBarContent: View {
         VStack(spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass").foregroundStyle(T.muted)
-                TextField("Buscar na biblioteca", text: $query).textFieldStyle(.plain)
+                TextField(tr("Search library"), text: $query).textFieldStyle(.plain)
             }.inputField()
             HStack(spacing: 6) {
-                chip("Todas \(total)", isOn: !onlyActive) { onlyActive = false }
-                chip("Ativas \(active)", isOn: onlyActive) { onlyActive = true }
+                chip(tr("All %ld", total), isOn: !onlyActive) { onlyActive = false }
+                chip(tr("Active %ld", active), isOn: onlyActive) { onlyActive = true }
                 Spacer()
             }
         }.padding(12)
@@ -127,8 +127,8 @@ struct MenuBarContent: View {
     @ViewBuilder
     private func list(_ items: [FontFamilyItem], totalInLibrary: Int) -> some View {
         if items.isEmpty {
-            Text(totalInLibrary == 0 ? "A biblioteca está vazia. Adicione fontes na janela principal."
-                                     : "Nenhuma fonte encontrada.")
+            Text(totalInLibrary == 0 ? tr("The library is empty. Add fonts in the main window.")
+                                     : tr("No fonts found."))
                 .font(.system(size: 12)).foregroundStyle(T.muted)
                 .multilineTextAlignment(.center).padding(24)
                 .frame(maxWidth: .infinity).frame(height: listHeight)
@@ -162,7 +162,7 @@ struct MenuBarContent: View {
     private var loginRow: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Abrir ao ligar o Mac").font(.system(size: 12))
+                Text(tr("Open at login")).font(.system(size: 12))
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { loginState == .enabled || loginState == .needsApproval },
@@ -173,7 +173,7 @@ struct MenuBarContent: View {
                 ).toggleStyle(.switch).controlSize(.small).labelsHidden().tint(T.green)
             }
             if loginState == .needsApproval {
-                Button("Aprovar em Ajustes do Sistema…") { LoginItem.openSystemSettings() }
+                Button(tr("Approve in System Settings…")) { LoginItem.openSystemSettings() }
                     .buttonStyle(.plain).font(.system(size: 11, weight: .semibold)).foregroundStyle(T.lime)
             }
             if let loginMessage { Text(loginMessage).font(.system(size: 11)).foregroundStyle(T.muted) }
@@ -184,14 +184,14 @@ struct MenuBarContent: View {
 
     private var footer: some View {
         HStack(spacing: 14) {
-            Button("Abrir Tipoteca") {
+            Button(tr("Open Tipoteca")) {
                 NSApp.activate(ignoringOtherApps: true)
                 openWindow(id: "main")
             }
-            Button("Desativar todas") { store.deactivateAll() }
+            Button(tr("Deactivate all")) { store.deactivateAll() }
                 .disabled(store.state.active.isEmpty)
             Spacer()
-            Button("Sair") { NSApp.terminate(nil) }
+            Button(tr("Quit")) { NSApp.terminate(nil) }
         }
         .buttonStyle(.plain).font(.system(size: 12, weight: .semibold))
         .padding(14)

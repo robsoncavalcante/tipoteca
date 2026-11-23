@@ -5,6 +5,9 @@
 Gerenciador de fontes nativo para macOS (SwiftUI, sem Electron). Mantém a biblioteca de fontes fora do disco do sistema
 (por exemplo, num HD externo), mostra prévia **sem instalar** e ativa/desativa por família ou coleção.
 
+![Biblioteca](docs/screenshots/biblioteca.png)
+![Playground](docs/screenshots/playground.png)
+
 ## Recursos
 - Biblioteca em qualquer pasta, inclusive HD externo; "indexar sem copiar" ou copiar para a biblioteca
 - Prévia sem instalar; ativação por família, coleção ou favoritos (CoreText, nada é copiado para o sistema)
@@ -13,6 +16,7 @@ Gerenciador de fontes nativo para macOS (SwiftUI, sem Electron). Mantém a bibli
 - Ícone e painel na barra de menus, com busca e check para ativar/desativar
 - Abrir ao ligar o Mac
 - Playground: composições, projetos por cliente, modelos prontos, símbolo, cores e exportação em PNG
+- Interface em português e inglês (segue o idioma do macOS)
 - Compatibilidade com apps que só leem pastas de fontes (modo Automático, veja abaixo)
 
 ## Requisitos
@@ -30,6 +34,17 @@ avisar: clique com o botão direito no app > **Abrir**, ou rode `xattr -cr Tipot
 
 > Se o seu projeto estiver num volume exFAT, o macOS cria arquivos `._*` que invalidam a assinatura.
 > Por isso o `build.sh` compila numa pasta temporária e copia o app limpo.
+
+## Testes
+```bash
+./tests/run.sh          # confere as traduções e roda os testes em Swift (não toca na sua biblioteca)
+./tools/snapshot.sh     # regenera as imagens do README (docs/screenshots)
+```
+O GitHub Actions roda os testes e compila o app a cada alteração.
+
+## Idiomas
+Português e inglês. O código usa o texto em inglês como chave e as traduções ficam em `Resources/<idioma>.lproj/Localizable.strings`.
+Para adicionar um idioma, copie `Resources/pt.lproj` para `Resources/<código>.lproj`, traduza os valores e rode `./tests/run.sh`.
 
 ## Onde ficam os dados
 `~/Library/Application Support/Tipoteca/` (`library.json`, `playground.json`, `backup/`, `font-cache/`).

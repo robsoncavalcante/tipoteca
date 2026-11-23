@@ -5,6 +5,9 @@
 A native macOS font manager (SwiftUI, no Electron). Keep your font library off the system disk (e.g. on an external
 drive), preview fonts **without installing them**, and activate/deactivate by family or collection.
 
+![Library](docs/screenshots/biblioteca.png)
+![Playground](docs/screenshots/playground.png)
+
 ## Features
 - Library in any folder, including external drives; "index without copying" or copy into the library
 - Preview without installing; activate by family, collection or favorites (CoreText, nothing is copied to the system)
@@ -13,6 +16,7 @@ drive), preview fonts **without installing them**, and activate/deactivate by fa
 - Menu bar icon and panel with search and per-font toggles
 - Launch at login
 - Playground: compositions, per-client projects, ready-made templates, symbol, colors, PNG export
+- English and Portuguese interface (follows the macOS language)
 - Compatibility with apps that only read font folders (Automatic mode, below)
 
 ## Requirements
@@ -30,6 +34,17 @@ The app is ad-hoc signed (no developer account, not notarized). On first launch 
 
 > On an exFAT volume macOS creates `._*` files that break the code signature, so `build.sh` builds in a temp folder
 > and copies a clean app.
+
+## Tests
+```bash
+./tests/run.sh          # checks translations and runs the Swift tests (never touches your library)
+./tools/snapshot.sh     # regenerates the README images (docs/screenshots)
+```
+GitHub Actions runs the tests and builds the app on every change.
+
+## Languages
+English and Portuguese. The code uses the English text as the key; translations live in `Resources/<language>.lproj/Localizable.strings`.
+To add a language, copy `Resources/pt.lproj` to `Resources/<code>.lproj`, translate the values and run `./tests/run.sh`.
 
 ## Data
 `~/Library/Application Support/Tipoteca/` (`library.json`, `playground.json`, `backup/`, `font-cache/`).

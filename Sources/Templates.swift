@@ -23,61 +23,61 @@ enum Templates {
     }
 
     static let all: [CompositionTemplate] = [
-        CompositionTemplate(id: "marca", name: "Marca", summary: "Nome + descritor. Adicione o símbolo na linha Símbolo.") {
-            composition("Marca", blocks: [
-                block("Título", "Café da Zi!", size: 84, weight: 700, tracking: -0.02, line: 1.0),
-                block("Apoio", "CAFETERIA DE BAIRRO", size: 16, weight: 500, tracking: 0.28)
+        CompositionTemplate(id: "marca", name: tr("Brand"), summary: tr("Name + descriptor. Add the symbol in the Symbol row.")) {
+            composition(tr("Brand"), blocks: [
+                block("Título", tr("Morning Brew!"), size: 84, weight: 700, tracking: -0.02, line: 1.0),
+                block("Apoio", tr("NEIGHBORHOOD COFFEE SHOP"), size: 16, weight: 500, tracking: 0.28)
             ])
         },
-        CompositionTemplate(id: "cartaz", name: "Cartaz", summary: "Título gigante, data e chamada.") {
-            composition("Cartaz", background: "111111", ink: "F4F1EA", blocks: [
-                block("Título", "FESTIVAL DE VERÃO", size: 88, weight: 900, tracking: -0.02, line: 0.95),
-                block("Apoio", "Sábado, 14 de dezembro · Praça Central", size: 22, weight: 500),
-                block("Corpo", "Entrada gratuita. Música, comida e arte local o dia todo.", size: 15, line: 1.5)
+        CompositionTemplate(id: "cartaz", name: tr("Poster"), summary: tr("Giant title, date and call to action.")) {
+            composition(tr("Poster"), background: "111111", ink: "F4F1EA", blocks: [
+                block("Título", tr("SUMMER FESTIVAL"), size: 88, weight: 900, tracking: -0.02, line: 0.95),
+                block("Apoio", tr("Saturday, December 14 · Central Square"), size: 22, weight: 500),
+                block("Corpo", tr("Free entry. Music, food and local art all day."), size: 15, line: 1.5)
             ])
         },
-        CompositionTemplate(id: "instagram", name: "Post de Instagram", summary: "Frase forte em fundo de cor.") {
-            composition("Post de Instagram", dark: false, background: "C7FE83", ink: "0A0D0B", blocks: [
-                block("Título", "Pare de adiar.\nComece hoje.", size: 72, weight: 800, tracking: -0.02, line: 1.0),
-                block("Apoio", "Três passos simples para organizar suas fontes", size: 22, weight: 500),
-                block("Corpo", "@suamarca", size: 15, weight: 600, tracking: 0.04)
+        CompositionTemplate(id: "instagram", name: tr("Instagram post"), summary: tr("Strong phrase on a colored background.")) {
+            composition(tr("Instagram post"), dark: false, background: "C7FE83", ink: "0A0D0B", blocks: [
+                block("Título", tr("Stop postponing.\nStart today."), size: 72, weight: 800, tracking: -0.02, line: 1.0),
+                block("Apoio", tr("Three simple steps to organize your fonts"), size: 22, weight: 500),
+                block("Corpo", tr("@yourbrand"), size: 15, weight: 600, tracking: 0.04)
             ])
         },
-        CompositionTemplate(id: "editorial", name: "Editorial", summary: "Revista: título, linha fina e texto corrido.") {
+        CompositionTemplate(id: "editorial", name: "Editorial", summary: tr("Magazine: headline, standfirst and body text.")) {
             composition("Editorial", dark: false, background: "F6F1E7", ink: "1B1712", blocks: [
-                block("Título", "O mundo lá fora que lute", size: 60, weight: 700, tracking: -0.01, line: 1.05),
-                block("Apoio", "Aqui dentro o café é saboroso e a sua paz é sagrada.", size: 24, line: 1.25),
-                block("Corpo", "Na cafeteria, a regra é simples: o mundo lá fora sempre pode esperar por quinze minutos. Teste como o título conversa com o parágrafo, o ritmo das linhas e a hierarquia da página.", size: 16, line: 1.6)
+                block("Título", tr("Let the outside world fend for itself"), size: 60, weight: 700, tracking: -0.01, line: 1.05),
+                block("Apoio", tr("In here the coffee is good and your peace is sacred."), size: 24, line: 1.25),
+                block("Corpo", tr("At the café the rule is simple: the outside world can always wait fifteen minutes. Test how the headline talks to the paragraph, the rhythm of the lines and the hierarchy of the page."), size: 16, line: 1.6)
             ])
         },
-        CompositionTemplate(id: "site", name: "Site (hero)", summary: "Título de chamada, subtítulo e preço.") {
+        CompositionTemplate(id: "site", name: "Site (hero)", summary: tr("Headline, subtitle and price.")) {
             composition("Site (hero)", blocks: [
-                block("Título", "Peça café especial", size: 64, weight: 700, tracking: -0.02, line: 1.05),
-                block("Apoio", "Torrado na semana, entregue na sua porta.", size: 22),
-                block("Corpo", "Assinaturas a partir de R$ 39,90 por mês. Cancele quando quiser.", size: 16, line: 1.5)
+                block("Título", tr("Order specialty coffee"), size: 64, weight: 700, tracking: -0.02, line: 1.05),
+                block("Apoio", tr("Roasted this week, delivered to your door."), size: 22),
+                block("Corpo", tr("Subscriptions from $9.90 a month. Cancel anytime."), size: 16, line: 1.5)
             ])
         },
-        CompositionTemplate(id: "citacao", name: "Citação", summary: "Frase em destaque e autor.") {
-            composition("Citação", background: "0B3D2E", ink: "F4F1EA", blocks: [
-                block("Título", "“Design é pensar\ntornado visível.”", size: 56, weight: 600, tracking: -0.01, line: 1.12),
+        CompositionTemplate(id: "citacao", name: tr("Quote"), summary: tr("Highlighted quote and author.")) {
+            composition(tr("Quote"), background: "0B3D2E", ink: "F4F1EA", blocks: [
+                block("Título", tr("“Design is thinking\nmade visible.”"), size: 56, weight: 600, tracking: -0.01, line: 1.12),
                 block("Apoio", "— SAUL BASS", size: 15, weight: 600, tracking: 0.2)
             ])
         },
-        CompositionTemplate(id: "convite", name: "Convite", summary: "Chamada pequena, nome grande e detalhes.") {
-            composition("Convite", dark: false, background: "FBEFE6", ink: "3A1F14", blocks: [
-                block("Apoio", "VOCÊ ESTÁ CONVIDADO", size: 14, weight: 600, tracking: 0.3),
-                block("Título", "Aniversário da Zi", size: 68, weight: 700, tracking: -0.01, line: 1.05),
-                block("Corpo", "Sábado, 20h · Rua das Flores, 123\nConfirme presença até quinta.", size: 17, line: 1.7)
+        CompositionTemplate(id: "convite", name: tr("Invitation"), summary: tr("Small lead-in, big name and details.")) {
+            composition(tr("Invitation"), dark: false, background: "FBEFE6", ink: "3A1F14", blocks: [
+                block("Apoio", tr("YOU ARE INVITED"), size: 14, weight: 600, tracking: 0.3),
+                block("Título", tr("Zoe's Birthday"), size: 68, weight: 700, tracking: -0.01, line: 1.05),
+                block("Corpo", tr("Saturday, 8 pm · 123 Flower Street\nRSVP by Thursday."), size: 17, line: 1.7)
             ])
         },
-        CompositionTemplate(id: "cardapio", name: "Cardápio", summary: "Seção, itens e preços.") {
-            composition("Cardápio", blocks: [
-                block("Título", "Cardápio", size: 60, weight: 700, tracking: -0.02, line: 1.0),
-                block("Apoio", "CAFÉS", size: 15, weight: 600, tracking: 0.25),
-                block("Corpo", "Espresso · R$ 7\nCapuccino · R$ 12\nLatte · R$ 14\nCoado do dia · R$ 10", size: 19, line: 1.8)
+        CompositionTemplate(id: "cardapio", name: tr("Menu"), summary: tr("Section, items and prices.")) {
+            composition(tr("Menu"), blocks: [
+                block("Título", tr("Menu"), size: 60, weight: 700, tracking: -0.02, line: 1.0),
+                block("Apoio", tr("COFFEES"), size: 15, weight: 600, tracking: 0.25),
+                block("Corpo", tr("Espresso · $3\nCappuccino · $4\nLatte · $4.50\nDaily brew · $3"), size: 19, line: 1.8)
             ])
         },
-        CompositionTemplate(id: "hierarquia", name: "Hierarquia de texto", summary: "Título, apoio e corpo para testar pares de fontes.") {
+        CompositionTemplate(id: "hierarquia", name: tr("Text hierarchy"), summary: tr("Title, support and body to test font pairings.")) {
             Composition.starter
         }
     ]
@@ -96,30 +96,30 @@ struct TemplateGallery: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Modelos").font(.system(size: 24, weight: .bold))
-                    Text("Usam as fontes padrão do projeto. Depois é só trocar fonte, texto e cores.")
+                    Text(tr("Templates")).font(.system(size: 24, weight: .bold))
+                    Text(tr("They use the project's default fonts. Then just change font, text and colors."))
                         .font(.system(size: 12)).foregroundStyle(T.muted)
                 }
                 Spacer()
-                Button("Fechar") { dismiss() }.keyboardShortcut(.cancelAction)
+                Button(tr("Close")) { dismiss() }.keyboardShortcut(.cancelAction)
             }.padding(24)
             Rectangle().fill(T.line).frame(height: 1)
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     if !store.playground.userTemplates.isEmpty {
-                        Text("Meus modelos").font(.system(size: 13, weight: .bold))
+                        Text(tr("My templates")).font(.system(size: 13, weight: .bold))
                         LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
                             ForEach(store.playground.userTemplates) { template in
-                                card(template, name: template.name, summary: "Salvo por você")
+                                card(template, name: template.name, summary: tr("Saved by you"))
                                     .contextMenu {
-                                        Button("Excluir modelo", role: .destructive) {
+                                        Button(tr("Delete template"), role: .destructive) {
                                             store.playground.userTemplates.removeAll { $0.id == template.id }
                                         }
                                     }
                             }
                         }
                     }
-                    Text("Modelos prontos").font(.system(size: 13, weight: .bold))
+                    Text(tr("Ready-made templates")).font(.system(size: 13, weight: .bold))
                     LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
                         ForEach(Templates.all) { template in
                             card(template.make(), name: template.name, summary: template.summary)

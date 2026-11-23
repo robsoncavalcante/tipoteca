@@ -14,24 +14,8 @@ STAGE="$(mktemp -d /tmp/tipoteca-build.XXXXXX)"
 APP="$STAGE/Tipoteca.app"
 trap 'rm -rf "$STAGE"' EXIT
 
-# SDK: testa os candidatos (o do sistema e os das Command Line Tools) e usa o primeiro em que o SwiftUI
-# compila com @State. Alguns SDKs sem Xcode não trazem o plugin de macros do SwiftUI e falham.
-# Dá para forçar com TIPOTECA_SDK=/caminho/do.sdk
-cat > "$STAGE/probe.swift" <<'SWIFT'
-import SwiftUI
-struct Probe: View { @State var a = 0; var body: some View { Text("\(a)") } }
-SWIFT
-SDK=""
-CANDIDATES=("${TIPOTECA_SDK:-}" "$(xcrun --show-sdk-path 2>/dev/null || true)")
-for s in /Library/Developer/CommandLineTools/SDKs/MacOSX*.sdk; do CANDIDATES+=("$s"); done
-for s in "${CANDIDATES[@]}"; do
-  [ -n "$s" ] && [ -d "$s" ] || continue
-  if swiftc -typecheck -parse-as-library -swift-version 5 -sdk "$s" -target arm64-apple-macosx14.0 \
-       "$STAGE/probe.swift" >/dev/null 2>&1; then SDK="$s"; break; fi
-done
-if [ -z "$SDK" ]; then
-  echo "erro: nenhum SDK do macOS compila SwiftUI. Instale o Xcode ou rode 'xcode-select --install'."; exit 1
-fi
+# SDK: o primeiro em que o SwiftUI compila (veja tools/find-sdk.sh; dá para forçar com TIPOTECA_SDK)
+SDK="$(tools/find-sdk.sh)"
 echo "SDK: $SDK"
 
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
@@ -44,6 +28,8 @@ if [ ! -f Resources/AppIcon.icns ]; then
   iconutil -c icns "$STAGE/AppIcon.iconset" -o Resources/AppIcon.icns
 fi
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+# Traduções: Resources/<idioma>.lproj/Localizable.strings (o código usa inglês como chave)
+for lp in Resources/*.lproj; do [ -d "$lp" ] && mkdir -p "$APP/Contents/Resources/$(basename "$lp")" && cp "$lp"/*.strings "$APP/Contents/Resources/$(basename "$lp")/"; done
 
 swiftc -O -suppress-warnings -swift-version 5 -parse-as-library -sdk "$SDK" \
   -target arm64-apple-macosx14.0 \
@@ -54,6 +40,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>CFBundleName</key><string>Tipoteca</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>pt</string></array>
   <key>CFBundleDisplayName</key><string>Tipoteca</string>
   <key>CFBundleIdentifier</key><string>br.com.criativecom.tipoteca</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>

@@ -1,0 +1,14 @@
+name: Sugestão / Feature request
+description: Uma ideia para o Tipoteca / An idea for Tipoteca
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Qual é a ideia? / What is the idea?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Que problema isso resolve? / What problem does it solve?

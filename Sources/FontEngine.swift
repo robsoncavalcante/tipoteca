@@ -152,7 +152,7 @@ enum FolderActivator {
         let dir = folder(for: family)
         let cache = cacheFolder(for: family)
         do { try fm.createDirectory(at: dir, withIntermediateDirectories: true) }
-        catch { return ["não foi possível criar a pasta: \(error.localizedDescription)"] }
+        catch { return [tr("could not create the folder: %@", error.localizedDescription)] }
         var errors: [String] = []
         for source in family.urls {
             let name = source.lastPathComponent

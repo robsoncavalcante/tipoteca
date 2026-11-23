@@ -1,0 +1,37 @@
+name: Bug / Erro
+description: Algo não funcionou como esperado / Something did not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu? / What happened?
+      description: Descreva o problema e o que você esperava. / Describe the problem and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir / Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: Versão do macOS e do Tipoteca / macOS and Tipoteca version
+      placeholder: "macOS 15.2, Tipoteca 0.3.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Modo de ativação / Activation mode
+      options: [Automático / Automatic, Pelo sistema / System, Por pasta / Folder]
+  - type: input
+    id: app
+    attributes:
+      label: App onde a fonte não aparece (se for o caso) / App where the font does not show up
+      placeholder: "Illustrator, EffectCraft..."
+  - type: markdown
+    attributes:
+      value: "Não anexe arquivos de fontes com licença restrita. / Please do not attach fonts with restrictive licenses."

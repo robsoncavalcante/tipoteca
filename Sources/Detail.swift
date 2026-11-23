@@ -10,7 +10,12 @@ struct FamilyDetail: View {
     @State private var tab: Tab = .styles
     @State private var faceID: String
 
-    enum Tab: String, CaseIterable { case styles = "Estilos", glyphs = "Glifos", axes = "Eixos variáveis" }
+    enum Tab: String, CaseIterable {
+        case styles = "Estilos", glyphs = "Glifos", axes = "Eixos variáveis"
+        var title: String {
+            switch self { case .styles: return tr("Styles"); case .glyphs: return tr("Glyphs"); case .axes: return tr("Variable axes") }
+        }
+    }
 
     init(family: FontFamilyItem, tab: Tab = .styles) {
         self.family = family
@@ -40,15 +45,15 @@ struct FamilyDetail: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text(family.name).font(.system(size: 26, weight: .bold)).tracking(-0.5)
-                Text("\(family.source.label) · \(family.faces.count) \(family.faces.count == 1 ? "estilo" : "estilos")")
+                Text(tr("%@ · %@", family.source.label, trPlural(family.faces.count, "%ld style", "%ld styles")))
                     .font(.system(size: 12)).foregroundStyle(T.muted)
                 Spacer()
-                Button("Fechar") { dismiss() }.keyboardShortcut(.cancelAction)
+                Button(tr("Close")) { dismiss() }.keyboardShortcut(.cancelAction)
             }
             HStack(spacing: 4) {
                 ForEach(Tab.allCases, id: \.self) { item in
                     Button { tab = item } label: {
-                        Text(item.rawValue).font(.system(size: 13, weight: .semibold))
+                        Text(item.title).font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(tab == item ? T.green : T.muted)
                             .padding(.horizontal, 12).padding(.vertical, 7)
                             .overlay(alignment: .bottom) { if tab == item { Rectangle().fill(T.green).frame(height: 2) } }
@@ -56,7 +61,7 @@ struct FamilyDetail: View {
                 }
                 Spacer()
                 if tab != .styles && family.faces.count > 1 {
-                    Text("Estilo inspecionado").font(.system(size: 12)).foregroundStyle(T.muted)
+                    Text(tr("Inspected style")).font(.system(size: 12)).foregroundStyle(T.muted)
                     Picker("", selection: $faceID) {
                         ForEach(family.faces) { Text($0.style).tag($0.id) }
                     }.labelsHidden().frame(width: 200)
@@ -120,9 +125,9 @@ private struct GlyphsTab: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass").foregroundStyle(T.muted)
-                    TextField("Buscar caractere ou U+0041", text: $query).textFieldStyle(.plain)
+                    TextField(tr("Search character or U+0041"), text: $query).textFieldStyle(.plain)
                 }.inputField().frame(width: 320)
-                Text(isLoading ? "Lendo glifos…" : "\(filtered.count) de \(scalars.count) caracteres\(scalars.count >= Self.limit ? " (limitado a \(Self.limit))" : "")")
+                Text(isLoading ? tr("Reading glyphs…") : tr("%ld of %ld characters", filtered.count, scalars.count) + (scalars.count >= Self.limit ? tr(" (limited to %ld)", Self.limit) : ""))
                     .font(.system(size: 11)).foregroundStyle(T.muted)
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 68), spacing: 0)], spacing: 0) {
@@ -163,7 +168,7 @@ private struct GlyphsTab: View {
                     Text(name.replacingOccurrences(of: "\\N{", with: "").replacingOccurrences(of: "}", with: ""))
                         .font(.system(size: 12)).foregroundStyle(T.muted)
                 }
-                Button(copied ? "Copiado ✓" : "Copiar caractere") {
+                Button(copied ? tr("Copied ✓") : tr("Copy character")) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(String(scalar), forType: .string)
                     copied = true
@@ -171,7 +176,7 @@ private struct GlyphsTab: View {
                 Spacer()
             }
         } else {
-            Text("Selecione um glifo para ampliar, ver o código e copiar o caractere.")
+            Text(tr("Select a glyph to enlarge it, see its code and copy the character."))
                 .font(.system(size: 12)).foregroundStyle(T.muted)
             Spacer()
         }
@@ -238,8 +243,8 @@ private struct AxesTab: View {
         if axes.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "slider.horizontal.3").font(.system(size: 28)).foregroundStyle(T.muted)
-                Text("Esta fonte não tem eixos variáveis.").font(.system(size: 14, weight: .semibold))
-                Text("Fontes variáveis guardam vários pesos/larguras num só arquivo (ex.: Alkatra[wght].ttf).")
+                Text(tr("This font has no variable axes.")).font(.system(size: 14, weight: .semibold))
+                Text(tr("Variable fonts store several weights/widths in a single file (e.g. Alkatra[wght].ttf)."))
                     .font(.system(size: 12)).foregroundStyle(T.muted)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -266,15 +271,15 @@ private struct AxesTab: View {
 
     private var controls: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Eixos disponíveis").font(.system(size: 13, weight: .bold))
+            Text(tr("Available axes")).font(.system(size: 13, weight: .bold))
             ForEach(axes) { axis in
                 LabeledSlider(label: "\(axis.name) (\(axis.tag))",
                               valueText: String(format: "%.0f", values[axis.id] ?? axis.initial),
                               value: Binding(get: { values[axis.id] ?? axis.initial }, set: { values[axis.id] = $0 }),
                               range: axis.minimum...max(axis.maximum, axis.minimum + 0.001))
             }
-            Button("Restaurar padrão") { values = Dictionary(uniqueKeysWithValues: axes.map { ($0.id, $0.initial) }) }
-            Text("As posições escolhidas valem só para esta prévia.").font(.system(size: 11)).foregroundStyle(T.muted)
+            Button(tr("Reset to default")) { values = Dictionary(uniqueKeysWithValues: axes.map { ($0.id, $0.initial) }) }
+            Text(tr("The chosen positions apply to this preview only.")).font(.system(size: 11)).foregroundStyle(T.muted)
             Spacer()
         }
     }
@@ -295,7 +300,7 @@ private struct AxesTab: View {
             let minimum = (dict[kCTFontVariationAxisMinimumValueKey as String] as? NSNumber)?.doubleValue ?? 0
             let maximum = (dict[kCTFontVariationAxisMaximumValueKey as String] as? NSNumber)?.doubleValue ?? 1
             let initial = (dict[kCTFontVariationAxisDefaultValueKey as String] as? NSNumber)?.doubleValue ?? minimum
-            let name = (dict[kCTFontVariationAxisNameKey as String] as? String) ?? "Eixo"
+            let name = (dict[kCTFontVariationAxisNameKey as String] as? String) ?? tr("Axis")
             return Axis(id: id, name: name, minimum: minimum, maximum: maximum, initial: initial)
         }
         axes = parsed

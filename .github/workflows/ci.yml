@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Testes (traduções + Swift)
+        run: ./tests/run.sh
+      - name: Compilar o app
+        run: ./build.sh
+      - name: Compactar
+        run: ditto -c -k --keepParent --norsrc --noextattr Tipoteca.app Tipoteca-macos-arm64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Tipoteca-macos-arm64
+          path: Tipoteca-macos-arm64.zip

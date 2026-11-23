@@ -11,17 +11,17 @@ enum ActivationMode: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .auto: return "Automático (recomendado)"
-        case .system: return "Pelo sistema"
-        case .folder: return "Por pasta (ArtCraft)"
+        case .auto: return tr("Automatic (recommended)")
+        case .system: return tr("Through the system")
+        case .folder: return tr("By folder (ArtCraft)")
         }
     }
 
     var detail: String {
         switch self {
-        case .auto: return "Não copia nada no dia a dia. Quando um app da ArtCraft abre, copia as fontes ativas na hora; quando o último fecha, apaga as cópias."
-        case .system: return "Não copia nada. Funciona no Adobe e em quase tudo, mas alguns apps (como o EffectCraft) não enxergam."
-        case .folder: return "Mantém sempre as fontes ativas copiadas em ~/Library/Fonts/Tipoteca. Todos os apps enxergam; ao desativar, a cópia é apagada."
+        case .auto: return tr("Copies nothing day to day. When an ArtCraft app opens, it copies the active fonts on the spot; when the last one closes, it deletes the copies.")
+        case .system: return tr("Copies nothing. Works in Adobe and almost everything, but some apps (like EffectCraft) cannot see them.")
+        case .folder: return tr("Always keeps the active fonts copied to ~/Library/Fonts/Tipoteca. Every app sees them; when you deactivate, the copy is deleted.")
         }
     }
 }
@@ -151,10 +151,10 @@ struct Composition: Codable, Identifiable, Hashable {
 
 extension Composition {
     static var starter: Composition {
-        Composition(name: "Composição 1", blocks: [
-            TextBlock(label: "Título", text: "Café da Zi!", familyID: nil, weight: 700, size: 64),
-            TextBlock(label: "Apoio", text: "Hidratado com minhas 12 xícaras de café!", familyID: nil, weight: nil, size: 24),
-            TextBlock(label: "Corpo", text: "Café é 98% água e 2% energia. Teste aqui como o título conversa com o parágrafo, a hierarquia e o ritmo do texto.", familyID: nil, weight: nil, size: 16, lineHeight: 1.45)
+        Composition(name: tr("Composition 1"), blocks: [
+            TextBlock(label: "Título", text: tr("Morning Brew!"), familyID: nil, weight: 700, size: 64),
+            TextBlock(label: "Apoio", text: tr("Hydrated with my 12 cups of coffee!"), familyID: nil, weight: nil, size: 24),
+            TextBlock(label: "Corpo", text: tr("Coffee is 98% water and 2% energy. Test here how the title talks to the paragraph, the hierarchy and the rhythm of the text."), familyID: nil, weight: nil, size: 16, lineHeight: 1.45)
         ])
     }
 }
@@ -185,7 +185,7 @@ struct PlaygroundState: Codable {
     }
 
     static var starter: PlaygroundState {
-        let project = Project(client: "Sem cliente", name: "Rascunhos", compositions: [.starter])
+        let project = Project(client: tr("No client"), name: tr("Drafts"), compositions: [.starter])
         return PlaygroundState(projects: [project], currentID: project.id)
     }
 
@@ -253,7 +253,7 @@ struct PlaygroundState: Codable {
             currentID = list.contains { $0.id == saved } ? (saved ?? list[0].id) : list[0].id
         } else {
             let old = try c.decodeIfPresent([Composition].self, forKey: .compositions) ?? []
-            var project = Project(client: "Sem cliente", name: "Rascunhos", compositions: old.isEmpty ? [.starter] : old)
+            var project = Project(client: tr("No client"), name: tr("Drafts"), compositions: old.isEmpty ? [.starter] : old)
             project.defaultTitle = try c.decodeIfPresent(String.self, forKey: .defaultTitle)
             project.defaultSupport = try c.decodeIfPresent(String.self, forKey: .defaultSupport)
             project.defaultBody = try c.decodeIfPresent(String.self, forKey: .defaultBody)

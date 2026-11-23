@@ -8,39 +8,39 @@ struct ImportSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Adicionar fontes").font(.system(size: 22, weight: .bold))
+            Text(tr("Add fonts")).font(.system(size: 22, weight: .bold))
             libraryFolder
-            action(title: "Indexar a pasta da biblioteca",
-                   detail: "Lê a pasta acima e adiciona o que o Tipoteca ainda não conhece. Não copia nada. Use depois de colocar fontes na pasta pelo Finder.",
-                   button: "Sincronizar", primary: true) { store.syncLibraryFolder(); dismiss() }
-            action(title: "Indexar outra pasta sem copiar",
-                   detail: "As fontes continuam onde estão (ex.: outro HD) e só passam a aparecer na biblioteca.",
-                   button: "Escolher pasta…") { choose(copy: false) }
+            action(title: tr("Index the library folder"),
+                   detail: tr("Reads the folder above and adds whatever Tipoteca does not know yet. Copies nothing. Use it after putting fonts in the folder through Finder."),
+                   button: tr("Sync"), primary: true) { store.syncLibraryFolder(); dismiss() }
+            action(title: tr("Index another folder without copying"),
+                   detail: tr("The fonts stay where they are (e.g. another drive) and simply start showing up in the library."),
+                   button: tr("Choose folder…")) { choose(copy: false) }
             VStack(alignment: .leading, spacing: 8) {
-                action(title: "Copiar para a biblioteca",
-                       detail: "Copia os arquivos escolhidos para a pasta da biblioteca (ex.: HD externo).",
-                       button: "Escolher arquivos ou pastas…") { choose(copy: true) }
-                Toggle("Depois de copiar, mover os originais para a Lixeira", isOn: $trashOriginals).toggleStyle(.checkbox)
+                action(title: tr("Copy to the library"),
+                       detail: tr("Copies the chosen files into the library folder (e.g. external drive)."),
+                       button: tr("Choose files or folders…")) { choose(copy: true) }
+                Toggle(tr("After copying, move the originals to Trash"), isOn: $trashOriginals).toggleStyle(.checkbox)
                     .font(.system(size: 12))
-                Button("Copiar tudo de ~/Library/Fonts") {
+                Button(tr("Copy everything from ~/Library/Fonts")) {
                     let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Fonts")
                     store.importFonts(from: [dir], copy: true, trashOriginals: trashOriginals); dismiss()
                 }.font(.system(size: 12))
-                Text("Recuperável: nada é apagado em definitivo. Fontes do sistema da Apple nunca são tocadas.")
+                Text(tr("Recoverable: nothing is permanently deleted. Apple system fonts are never touched."))
                     .font(.system(size: 11)).foregroundStyle(T.muted)
             }
-            HStack { Spacer(); Button("Fechar") { dismiss() } }
+            HStack { Spacer(); Button(tr("Close")) { dismiss() } }
         }
         .padding(24).frame(width: 600).background(T.bg).preferredColorScheme(.dark)
     }
 
     private var libraryFolder: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Pasta da biblioteca").font(.system(size: 12)).foregroundStyle(T.muted)
+            Text(tr("Library folder")).font(.system(size: 12)).foregroundStyle(T.muted)
             HStack {
                 Text(store.libraryDir.path).font(.system(size: 13)).lineLimit(1).truncationMode(.middle)
                 Spacer()
-                Button("Trocar…") { chooseLibraryFolder() }
+                Button(tr("Change…")) { chooseLibraryFolder() }
             }.padding(12).background(RoundedRectangle(cornerRadius: 8).fill(T.panel))
         }
     }
@@ -60,8 +60,8 @@ struct ImportSheet: View {
     private func choose(copy: Bool) {
         let panel = NSOpenPanel()
         panel.canChooseFiles = copy; panel.canChooseDirectories = true; panel.allowsMultipleSelection = true
-        panel.message = copy ? "Escolha fontes (.ttf .otf .ttc) ou pastas para copiar"
-                             : "Escolha a pasta de fontes que será indexada (sem copiar)"
+        panel.message = copy ? tr("Choose fonts (.ttf .otf .ttc) or folders to copy")
+                             : tr("Choose the font folder to index (without copying)")
         guard panel.runModal() == .OK else { return }
         store.importFonts(from: panel.urls, copy: copy, trashOriginals: copy && trashOriginals)
         dismiss()
@@ -70,7 +70,7 @@ struct ImportSheet: View {
     private func chooseLibraryFolder() {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false; panel.canChooseDirectories = true; panel.canCreateDirectories = true
-        panel.message = "Escolha a pasta onde a biblioteca ficará"
+        panel.message = tr("Choose the folder where the library will live")
         if panel.runModal() == .OK, let url = panel.url { store.libraryDir = url }
     }
 }

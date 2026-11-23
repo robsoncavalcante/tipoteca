@@ -21,19 +21,19 @@ extension LibraryStore {
 
     /// Novo projeto: herda as fontes padrão do atual para não começar do zero.
     func addProject(client: String, name: String, notes: String) {
-        var project = Project(client: clean(client, fallback: "Sem cliente"), name: clean(name, fallback: "Novo projeto"),
+        var project = Project(client: clean(client, fallback: tr("No client")), name: clean(name, fallback: tr("New project")),
                               notes: notes, compositions: [.starter])
         project.defaultTitle = playground.defaultTitle
         project.defaultSupport = playground.defaultSupport
         project.defaultBody = playground.defaultBody
         playground.projects.append(project)
         playground.currentID = project.id
-        status = "Projeto “\(project.name)” criado para \(project.client)."
+        status = tr("Project “%@” created for %@.", project.name, project.client)
     }
 
     func updateCurrentProject(client: String, name: String, notes: String) {
-        playground.current.client = clean(client, fallback: "Sem cliente")
-        playground.current.name = clean(name, fallback: "Projeto")
+        playground.current.client = clean(client, fallback: tr("No client"))
+        playground.current.name = clean(name, fallback: tr("Project"))
         playground.current.notes = notes
         playground.current.updatedAt = Date()
     }
@@ -41,12 +41,12 @@ extension LibraryStore {
     func duplicateCurrentProject() {
         var copy = playground.current
         copy.id = UUID()
-        copy.name += " (cópia)"
+        copy.name += tr(" (copy)")
         copy.updatedAt = Date()
         copy.compositions = copy.compositions.map { Self.freshIDs($0) }
         playground.projects.append(copy)
         playground.currentID = copy.id
-        status = "Projeto duplicado."
+        status = tr("Project duplicated.")
     }
 
     func deleteCurrentProject() {
@@ -54,7 +54,7 @@ extension LibraryStore {
         let id = playground.currentID
         playground.projects.removeAll { $0.id == id }
         playground.currentID = playground.projects[0].id
-        status = "Projeto excluído."
+        status = tr("Project deleted.")
     }
 
     /// Famílias usadas em qualquer composição do projeto (já com as fontes padrão aplicadas).
@@ -65,12 +65,12 @@ extension LibraryStore {
 
     func setCurrentProjectFonts(active: Bool) {
         let families = familiesOfCurrentProject()
-        guard !families.isEmpty else { status = "Este projeto ainda não usa nenhuma fonte da biblioteca."; return }
+        guard !families.isEmpty else { status = tr("This project does not use any library font yet."); return }
         let pending = families.filter { isActive($0) != active }
         pending.forEach { toggleActive($0) }
         status = pending.isEmpty
-            ? "As fontes do projeto já estavam \(active ? "ativas" : "desativadas")."
-            : "\(pending.count) \(pending.count == 1 ? "fonte" : "fontes") \(active ? "ativada(s)" : "desativada(s)") para o projeto “\(playground.current.name)”."
+            ? (active ? tr("The project fonts were already active.") : tr("The project fonts were already deactivated."))
+            : (active ? trPlural(pending.count, "%ld font activated for project “%@”.", "%ld fonts activated for project “%@”.", playground.current.name) : trPlural(pending.count, "%ld font deactivated for project “%@”.", "%ld fonts deactivated for project “%@”.", playground.current.name))
     }
 
     static func freshIDs(_ composition: Composition) -> Composition {
@@ -106,11 +106,11 @@ struct ProjectMenuButton: View {
         .buttonStyle(.plain)
         .popover(isPresented: $isOpen, arrowEdge: .bottom) { panel }
         .sheet(item: $sheetMode) { ProjectSheet(mode: $0) }
-        .confirmationDialog("Excluir o projeto “\(store.playground.current.name)”?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Excluir projeto", role: .destructive) { store.deleteCurrentProject() }
-            Button("Cancelar", role: .cancel) {}
+        .confirmationDialog(tr("Delete project “%@”?", store.playground.current.name), isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button(tr("Delete project"), role: .destructive) { store.deleteCurrentProject() }
+            Button(tr("Cancel"), role: .cancel) {}
         } message: {
-            Text("As composições e as notas deste projeto serão apagadas. As fontes da biblioteca não são afetadas.")
+            Text(tr("This project's compositions and notes will be deleted. Library fonts are not affected."))
         }
     }
 
@@ -129,12 +129,12 @@ struct ProjectMenuButton: View {
             }.frame(maxHeight: 280)
             Rectangle().fill(T.line).frame(height: 1)
             VStack(alignment: .leading, spacing: 0) {
-                action("plus", "Novo projeto…") { sheetMode = .new }
-                action("pencil", "Editar dados do projeto…") { sheetMode = .edit }
-                action("doc.on.doc", "Duplicar projeto") { store.duplicateCurrentProject() }
-                action("bolt", "Ativar as fontes do projeto") { store.setCurrentProjectFonts(active: true) }
-                action("bolt.slash", "Desativar as fontes do projeto") { store.setCurrentProjectFonts(active: false) }
-                action("trash", "Excluir projeto…", enabled: store.playground.projects.count > 1) { confirmDelete = true }
+                action("plus", tr("New project…")) { sheetMode = .new }
+                action("pencil", tr("Edit project details…")) { sheetMode = .edit }
+                action("doc.on.doc", tr("Duplicate project")) { store.duplicateCurrentProject() }
+                action("bolt", tr("Activate the project fonts")) { store.setCurrentProjectFonts(active: true) }
+                action("bolt.slash", tr("Deactivate the project fonts")) { store.setCurrentProjectFonts(active: false) }
+                action("trash", tr("Delete project…"), enabled: store.playground.projects.count > 1) { confirmDelete = true }
             }.padding(.vertical, 6)
         }
         .frame(width: 320).background(T.bg).foregroundStyle(T.text).preferredColorScheme(.dark)
@@ -183,36 +183,36 @@ struct ProjectSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(mode == .new ? "Novo projeto" : "Dados do projeto").font(.system(size: 22, weight: .bold))
+            Text(mode == .new ? tr("New project") : tr("Project details")).font(.system(size: 22, weight: .bold))
             VStack(alignment: .leading, spacing: 6) {
-                Text("Cliente").font(.system(size: 12)).foregroundStyle(T.muted)
+                Text(tr("Client")).font(.system(size: 12)).foregroundStyle(T.muted)
                 HStack(spacing: 8) {
-                    TextField("Ex.: Café da Zi", text: $client).inputField()
+                    TextField(tr("E.g. Coffee Shop"), text: $client).inputField()
                     if !store.clients.isEmpty {
-                        Menu("Existentes") { ForEach(store.clients, id: \.self) { c in Button(c) { client = c } } }
+                        Menu(tr("Existing")) { ForEach(store.clients, id: \.self) { c in Button(c) { client = c } } }
                             .menuStyle(.borderlessButton).fixedSize()
                     }
                 }
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text("Projeto").font(.system(size: 12)).foregroundStyle(T.muted)
-                TextField("Ex.: Identidade visual", text: $name).inputField()
+                Text(tr("Project")).font(.system(size: 12)).foregroundStyle(T.muted)
+                TextField(tr("E.g. Visual identity"), text: $name).inputField()
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text("Notas").font(.system(size: 12)).foregroundStyle(T.muted)
+                Text(tr("Notes")).font(.system(size: 12)).foregroundStyle(T.muted)
                 TextEditor(text: $notes).font(.system(size: 13)).scrollContentBackground(.hidden)
                     .padding(8).frame(height: 110)
                     .background(RoundedRectangle(cornerRadius: 6).fill(T.panel))
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(T.lineStrong))
             }
             if mode == .new {
-                Text("O novo projeto começa com as mesmas fontes padrão do projeto atual.")
+                Text(tr("The new project starts with the same default fonts as the current project."))
                     .font(.system(size: 11)).foregroundStyle(T.muted)
             }
             HStack {
                 Spacer()
-                Button("Cancelar") { dismiss() }.keyboardShortcut(.cancelAction)
-                GreenButton(title: mode == .new ? "Criar projeto" : "Salvar") {
+                Button(tr("Cancel")) { dismiss() }.keyboardShortcut(.cancelAction)
+                GreenButton(title: mode == .new ? tr("Create project") : tr("Save")) {
                     if mode == .new { store.addProject(client: client, name: name, notes: notes) }
                     else { store.updateCurrentProject(client: client, name: name, notes: notes) }
                     dismiss()
@@ -236,7 +236,7 @@ struct ProjectNotesCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Notas do projeto").font(.system(size: 13, weight: .bold))
+            Text(tr("Project notes")).font(.system(size: 13, weight: .bold))
             TextEditor(text: Binding(
                 get: { store.playground.current.notes },
                 set: { store.playground.current.notes = $0 }))
@@ -244,7 +244,7 @@ struct ProjectNotesCard: View {
                 .padding(8).frame(minHeight: 90)
                 .background(RoundedRectangle(cornerRadius: 6).fill(T.bg))
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(T.lineStrong))
-            Text("Ex.: o cliente aprovou a opção 2; evitar fontes manuscritas; paleta oficial #0B3D2E.")
+            Text(tr("E.g. the client approved option 2; avoid script fonts; official palette #0B3D2E."))
                 .font(.system(size: 11)).foregroundStyle(T.muted)
         }
         .padding(14).background(RoundedRectangle(cornerRadius: 10).fill(T.panel))

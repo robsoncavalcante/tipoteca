@@ -27,7 +27,7 @@ extension Color {
 
 /// Preferências de prévia compartilhadas por todas as listas.
 final class PreviewPrefs: ObservableObject {
-    @Published var text = "Feito para criar"
+    @Published var text = tr("Made for creating")
     @Published var size: Double = 48
     @Published var tracking: Double = 0      // em
     @Published var weight: Int? = nil        // nil = padrão
@@ -71,7 +71,7 @@ struct ActivateDot: View {
             .contentShape(Rectangle())   // o miolo transparente também recebe o clique
         }
         .buttonStyle(.plain)
-        .help(isOn ? "Desativar no sistema" : "Ativar no sistema")
+        .help(isOn ? tr("Deactivate in the system") : tr("Activate in the system"))
     }
 }
 
@@ -145,7 +145,7 @@ struct ActivationModeCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("MODO DE ATIVAÇÃO").font(.system(size: 10.5, weight: .semibold)).tracking(0.6).foregroundStyle(T.muted)
+            Text(tr("ACTIVATION MODE")).font(.system(size: 10.5, weight: .semibold)).tracking(0.6).foregroundStyle(T.muted)
             ForEach(ActivationMode.allCases, id: \.self) { mode in
                 Button { store.setActivationMode(mode) } label: {
                     HStack(alignment: .top, spacing: 8) {
@@ -173,10 +173,10 @@ struct ActivationModeCard: View {
         let isFolder = store.appliedMode == .folder
         let apps = store.artCraftApps
         let text: String
-        if !apps.isEmpty && isFolder { text = "\(apps.joined(separator: ", ")) aberto · fontes copiadas em ~/Library/Fonts/Tipoteca" }
-        else if !apps.isEmpty { text = "\(apps.joined(separator: ", ")) aberto · ativação pelo sistema" }
-        else if isFolder { text = "Fontes copiadas em ~/Library/Fonts/Tipoteca" }
-        else { text = "Nenhum app ArtCraft aberto · ativação pelo sistema" }
+        if !apps.isEmpty && isFolder { text = tr("%@ open · fonts copied to ~/Library/Fonts/Tipoteca", apps.joined(separator: ", ")) }
+        else if !apps.isEmpty { text = tr("%@ open · system activation", apps.joined(separator: ", ")) }
+        else if isFolder { text = tr("Fonts copied to ~/Library/Fonts/Tipoteca") }
+        else { text = tr("No ArtCraft app open · system activation") }
         return HStack(alignment: .top, spacing: 6) {
             Circle().fill(isFolder ? T.lime : T.green).frame(width: 7, height: 7).padding(.top, 4)
             Text(text).font(.system(size: 10.5)).foregroundStyle(T.muted).fixedSize(horizontal: false, vertical: true)
