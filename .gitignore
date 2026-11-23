@@ -1,0 +1,21 @@
+# macOS / volumes exFAT
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Build
+*.app/
+build/
+
+# Arquivos pessoais da instalação do autor (não fazem parte do projeto)
+Instalar Tipoteca.command
+
+# Nunca versionar fontes nem dados da biblioteca de quem usa
+*.ttf
+*.otf
+*.ttc
+*.woff
+*.woff2
+library.json
+playground.json
