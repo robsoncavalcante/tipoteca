@@ -12,6 +12,15 @@ import Darwin
 final class ArtCraftWatcher {
     static let bundlePrefix = "ai.storyteller."
     static let ignored: Set<String> = ["ai.storyteller.artcraft-launcher"]
+    /// Apps da mesma família que não usam o prefixo acima, mas também só leem pastas de fontes (o TraceDraw varre
+    /// /Library/Fonts, ~/Library/Fonts e /System/Library/Fonts, sem passar pelo CoreText).
+    static let extraBundleIDs: Set<String> = ["dev.tracedraw.app"]
+
+    /// Esse bundle id é de um app que precisa das fontes em pasta?
+    nonisolated static func matches(bundleID: String) -> Bool {
+        if ignored.contains(bundleID) { return false }
+        return bundleID.hasPrefix(bundlePrefix) || extraBundleIDs.contains(bundleID)
+    }
 
     /// Chamado sempre que a lista de apps ArtCraft abertos muda (nomes ordenados; vazio = nenhum).
     var onChange: (([String]) -> Void)?
@@ -24,7 +33,7 @@ final class ArtCraftWatcher {
 
     static func isArtCraft(_ bundleID: String?) -> Bool {
         guard let id = bundleID else { return false }
-        return id.hasPrefix(bundlePrefix) && !ignored.contains(id)
+        return matches(bundleID: id)
     }
 
     static func currentlyRunning() -> [String] {
@@ -148,8 +157,7 @@ final class FastProcessPoller: @unchecked Sendable {
         let id: String?
         if let cached = bundleCache[appPath] { id = cached }
         else { id = Bundle(path: appPath)?.bundleIdentifier; bundleCache[appPath] = id }
-        guard let bundleID = id, bundleID.hasPrefix(ArtCraftWatcher.bundlePrefix),
-              !ArtCraftWatcher.ignored.contains(bundleID) else { return nil }
+        guard let bundleID = id, ArtCraftWatcher.matches(bundleID: bundleID) else { return nil }
         return ((appPath as NSString).lastPathComponent as NSString).deletingPathExtension
     }
 }

@@ -123,5 +123,16 @@ do {
     check(blockLabel("Título") == "Title" && blockLabel("Corpo") == "Body" && blockLabel("Outro") == "Outro", "rótulos de bloco são traduzidos só na exibição")
 }
 
+// MARK: - Apps que só leem pastas de fontes
+
+section("Apps da ArtCraft")
+do {
+    check(ArtCraftWatcher.matches(bundleID: "ai.storyteller.effectcraft"), "reconhece app com prefixo ai.storyteller")
+    check(ArtCraftWatcher.matches(bundleID: "dev.tracedraw.app"), "reconhece o TraceDraw")
+    check(!ArtCraftWatcher.matches(bundleID: "ai.storyteller.artcraft-launcher"), "ignora o ArtCraft Launcher")
+    check(!ArtCraftWatcher.matches(bundleID: "com.apple.finder"), "ignora apps que não são da família")
+    check(!ArtCraftWatcher.matches(bundleID: "dev.tracedraw.other"), "não aceita qualquer id parecido")
+}
+
 print("\n\(passed) passaram, \(failures) falharam")
 exit(failures == 0 ? 0 : 1)
