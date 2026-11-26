@@ -63,6 +63,7 @@ Automatic mode runs a process watcher (25 ms, ~1% CPU) only while that mode is s
 ## Tested with
 - Adobe (Photoshop, Illustrator) and CoreText-based apps: live activation
 - [ArtCraft](https://getartcraft.com/) suite: DesignCraft, PhotoCraft and EffectCraft tested; others not yet
+- TraceDraw: only reads font folders, and only once, when it opens. To be safe, use the **By folder (ArtCraft)** mode (Automatic can be too late)
 
 ## Font licenses
 Tipoteca **does not redistribute fonts**. Each font has its own license: check it before commercial use.

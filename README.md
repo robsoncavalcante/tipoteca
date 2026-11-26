@@ -63,6 +63,7 @@ O modo Automático usa uma vigia de processos (25 ms, ~1% de CPU) que só roda n
 ## Compatibilidade testada
 - Adobe (Photoshop, Illustrator) e apps que usam CoreText: ativação em tempo real
 - Suíte [ArtCraft](https://getartcraft.com/): DesignCraft, PhotoCraft e EffectCraft testados; os demais ainda não
+- TraceDraw: só lê pastas de fontes e as lê uma vez, ao abrir. Para garantir, use o modo **Por pasta (ArtCraft)** (o Automático pode chegar tarde demais)
 
 ## Licença das fontes
 O Tipoteca **não redistribui fontes**. Cada fonte tem a sua licença: confira antes de usar em trabalho comercial.
